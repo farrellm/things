@@ -1,0 +1,40 @@
+(ns things.gear
+  (:require [scad-clj.model :refer :all]
+            [scad-clj.scad :refer :all]
+            [clojure.core.matrix :refer [matrix mmul]])
+  (:import [java.lang.Math]))
+
+(def inner 10)
+(def outer 12)
+(def angle (* tau (/ 20 360)))
+
+(defn sq [x]
+  (* x x))
+
+(defn rot-z [t]
+  (matrix [[(Math/cos t)     (Math/sin t) 0]
+           [(- (Math/sin t)) (Math/cos t) 0]
+           [0                0            1]]))
+
+(defn involute-curve [i]
+  (fn [t]
+    (let [x (* i t)
+          h (Math/sqrt (+ (sq x) (sq i)))]
+      (mmul (rot-z (- t))
+            (matrix [x i 0])))))
+
+(let [n 5]
+  ;; ((involute-curve inner) 0.1)
+  (map #(/ % (dec n)) (range n))
+  )
+
+
+
+(def model
+  (extrude-linear {:height 3}
+   (circle inner)))
+
+
+
+(spit "model.scad"
+      (write-scad model))
