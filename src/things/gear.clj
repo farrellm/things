@@ -62,21 +62,37 @@
 (defn gear [{:keys [pitch-radius radial-pitch pressure-angle
                     tooth-ratio addendum] :as args}]
   (let [tooth (tooth args)]
-    (union
-     (circle (base-radius args))
-     (apply union
-            (map (fn [i] (rotate (* i (/ tau radial-pitch pitch-radius)) [0 0 1] tooth))
-                 (range (* radial-pitch pitch-radius)))))))
+    (rotate (/ tau 4) [0 0 -1]
+            (union
+             (circle (base-radius args))
+             (apply union
+                    (map (fn [i] (rotate (* i (/ tau radial-pitch pitch-radius)) [0 0 1] tooth))
+                         (range (* radial-pitch pitch-radius))))))))
 
-(defn tooth-position [{:keys [pitch-radius radial-pitch] :as args} angle]
-  (let [angular-width (/ tau radial-pitch pitch-radius)]))
+(defn angular-width [{:keys [pitch-radius radial-pitch] :as args}]
+  (/ tau radial-pitch pitch-radius))
+
+(defn tooth-position [{:keys [pitch-radius radial-pitch] :as args} rotation angle]
+  (/ (rem angle (angular-width args))
+     (angular-width args)))
+
+(defn mate-to [args1 args2 rot2 theta]
+  (let []))
 
 (def args1 {:pitch-radius 10
             :radial-pitch 3.0
             :pressure-angle (* tau (/ 20 360))
-            :addendum 0.5})
+            :addendum 0.3})
 (def args2 (assoc args1
              :pitch-radius 5))
+
+(defn rad->deg [a]
+  (* 360 (/ a tau)))
+
+(rad->deg (angular-width args2))
+
+(tooth-position args1 0 0)
+(tooth-position args2 0 (/ tau 2))
 
 (def model
   (extrude-linear {:height 3}
